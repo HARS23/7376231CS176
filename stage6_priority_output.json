@@ -1,0 +1,102 @@
+{
+  "generatedAt": "2026-05-08T10:27:09.834Z",
+  "requestedTopN": 10,
+  "totalNotificationsFetched": 20,
+  "priorityWeights": {
+    "Placement": 3,
+    "Result": 2,
+    "Event": 1
+  },
+  "topNotifications": [
+    {
+      "id": "79a5e4d0-d3e3-4d50-84df-63fe6dd361b1",
+      "type": "Placement",
+      "message": "PayPal Holdings Inc. hiring",
+      "timestamp": "2026-05-08 01:56:05",
+      "typeWeight": 3,
+      "timestampMs": 1778205365000,
+      "priorityScore": 3001778205365000
+    },
+    {
+      "id": "4217480e-5361-4592-ae0a-b878fb342224",
+      "type": "Placement",
+      "message": "Broadcom Inc. hiring",
+      "timestamp": "2026-05-08 01:27:09",
+      "typeWeight": 3,
+      "timestampMs": 1778203629000,
+      "priorityScore": 3001778203629000
+    },
+    {
+      "id": "860c80cb-9831-4f61-b44a-ed50c31733ed",
+      "type": "Placement",
+      "message": "Amgen Inc. hiring",
+      "timestamp": "2026-05-07 22:26:41",
+      "typeWeight": 3,
+      "timestampMs": 1778192801000,
+      "priorityScore": 3001778192801000
+    },
+    {
+      "id": "bfdd142d-fbbd-4b3e-8021-9c0c61284c17",
+      "type": "Placement",
+      "message": "Amgen Inc. hiring",
+      "timestamp": "2026-05-07 22:26:21",
+      "typeWeight": 3,
+      "timestampMs": 1778192781000,
+      "priorityScore": 3001778192781000
+    },
+    {
+      "id": "1351a4bf-033a-4731-a1a3-61f14c92c881",
+      "type": "Placement",
+      "message": "Marvell Technology Inc. hiring",
+      "timestamp": "2026-05-07 18:56:53",
+      "typeWeight": 3,
+      "timestampMs": 1778180213000,
+      "priorityScore": 3001778180213000
+    },
+    {
+      "id": "ade79e59-134b-4f32-b472-f72719950a9c",
+      "type": "Placement",
+      "message": "Apple Inc. hiring",
+      "timestamp": "2026-05-07 18:26:17",
+      "typeWeight": 3,
+      "timestampMs": 1778178377000,
+      "priorityScore": 3001778178377000
+    },
+    {
+      "id": "7537a51d-86f9-4620-9e18-cca65f034410",
+      "type": "Placement",
+      "message": "Meta Platforms Inc. hiring",
+      "timestamp": "2026-05-07 16:25:57",
+      "typeWeight": 3,
+      "timestampMs": 1778171157000,
+      "priorityScore": 3001778171157000
+    },
+    {
+      "id": "6e936751-b05b-40f8-8064-a377a68b3c7c",
+      "type": "Placement",
+      "message": "Berkshire Hathaway Inc. hiring",
+      "timestamp": "2026-05-07 10:57:05",
+      "typeWeight": 3,
+      "timestampMs": 1778151425000,
+      "priorityScore": 3001778151425000
+    },
+    {
+      "id": "4f004e25-a140-44d5-bf1e-c9c3bdca8b00",
+      "type": "Placement",
+      "message": "Berkshire Hathaway Inc. hiring",
+      "timestamp": "2026-05-07 10:56:29",
+      "typeWeight": 3,
+      "timestampMs": 1778151389000,
+      "priorityScore": 3001778151389000
+    },
+    {
+      "id": "a2c639a5-1bcd-4486-bf71-d018474dcc34",
+      "type": "Result",
+      "message": "internal",
+      "timestamp": "2026-05-08 05:26:13",
+      "typeWeight": 2,
+      "timestampMs": 1778217973000,
+      "priorityScore": 2001778217973000
+    }
+  ]
+}

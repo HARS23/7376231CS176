@@ -701,14 +701,215 @@ Tradeoff:
 
 ## Best practical approach
 
-If I had to choose a practical combination, I would do this:
-
 1. fetch only unread count on normal page load
 2. fetch notification list only when user opens notification panel
 3. use Redis cache for unread count and first page of notifications
 4. use SSE for live updates
 5. keep DB queries paginated and indexed
 
-## Conclusion
+# Stage 5
 
-The main improvement is to stop treating every page load like a full notification fetch. A mix of lazy loading, short-term caching, SSE, and pagination will reduce DB pressure a lot and improve user experience. The tradeoff is a little more application complexity, but it is worth it because read traffic is the real bottleneck here.
+## Problems in the current pseudocode
+
+The current approach does everything in one loop:
+
+- too slow for 50,000 students
+- one failure in the middle causes partial completion
+- email, DB save, and app push are tightly coupled
+- retries are hard to manage safely
+- if the process stops midway, we do not know clearly who already got what
+
+## What if 200 email calls fail midway
+
+I would not restart the whole process from the beginning because that can create duplicates.
+
+Instead:
+
+- keep notification data saved in DB first
+- track delivery status separately for each channel
+- retry only failed email jobs
+- keep in-app delivery independent from email delivery
+
+So if 200 emails fail, only those 200 should be retried.
+
+## Should DB save and email send happen together
+
+No, not as one direct synchronous process.
+
+Why:
+
+- DB save is the source of truth
+- email is an external side effect and can fail independently
+- if both are tied together, one bad email call can slow or block the whole flow
+
+So I would first save the notification and recipients in DB, then process email and app push asynchronously.
+
+## Better design
+
+I would split it like this:
+
+1. create one notification record
+2. bulk insert recipient rows into `user_notifications`
+3. create separate jobs for email and in-app delivery
+4. process jobs in parallel using workers
+5. retry only failed jobs with retry count and status tracking
+
+## Status tracking
+
+For each recipient, I would track:
+
+- `email_status`: pending, sent, failed
+- `in_app_status`: pending, sent, failed
+- `retry_count`
+- `last_error`
+
+This makes retry and debugging easier.
+
+## Revised pseudocode
+
+```text
+function notify_all(student_ids, message):
+    notification_id = create_notification(message)
+
+    bulk_save_user_notifications(notification_id, student_ids)
+
+    for student_id in student_ids:
+        enqueue_job("send_in_app", {
+            notification_id,
+            student_id
+        })
+
+        enqueue_job("send_email", {
+            notification_id,
+            student_id
+        })
+
+    return notification_id
+```
+
+Worker side:
+
+```text
+function process_send_email(job):
+    try:
+        send_email(job.student_id, job.notification_id)
+        mark_email_status(job.notification_id, job.student_id, "sent")
+    catch error:
+        mark_email_status(job.notification_id, job.student_id, "failed", error)
+        retry_job(job)
+```
+
+```text
+function process_send_in_app(job):
+    try:
+        push_to_app(job.student_id, job.notification_id)
+        mark_in_app_status(job.notification_id, job.student_id, "sent")
+    catch error:
+        mark_in_app_status(job.notification_id, job.student_id, "failed", error)
+        retry_job(job)
+```
+
+## Why this is better
+
+- bulk DB insert is much faster than row-by-row insert
+- workers can process deliveries in parallel
+- failed email jobs can be retried without repeating successful work
+- in-app notifications do not have to wait for email success
+- the system is easier to monitor because each step has a clear status
+
+## Tradeoff
+
+- more moving parts like queue and workers
+- more delivery status tracking
+- more implementation complexity
+
+But for 50,000 students, this is much safer and more scalable than a single loop doing everything directly.
+
+# Stage 6
+
+## Approach
+
+- fetch notifications from the protected API
+- assign a higher weight to more important types
+- use recency as the tie-breaker
+- keep only the top `n` notifications using a min-heap
+
+Weight used:
+
+- `Placement` = 3
+- `Result` = 2
+- `Event` = 1
+
+So placement notifications always rank above results, and results rank above events. Inside the same type, newer notifications rank higher.
+
+## Why I used a heap
+
+If new notifications keep coming in, I do not want to sort the full list again and again. A min-heap of size `n` is better because:
+
+- insert is efficient
+- we only keep the current top `n`
+- when a new notification comes, compare it with the smallest item in heap
+- if it is better, replace it
+
+This keeps maintenance cost around `O(log n)` per new notification, which is good for a rolling top 10.
+
+## Output
+
+The code writes the ranked output to `stage6_priority_output.json`, which can be used for screenshots.
+
+## Code file
+
+The implementation is in:
+
+- `stage6_priority_inbox.js`
+
+It uses the existing auth helper and logging middleware, fetches notifications from the API, computes the top priority notifications, and writes the final result to a file.
+
+# Stage 7
+
+This section covers the frontend implementation.
+
+## Tech choice
+
+I used a React app with Next.js so the protected notification API can be called from server routes without exposing secrets in the browser.
+
+## Frontend features
+
+- responsive UI for desktop and mobile
+- page for all notifications
+- priority inbox view for top `n` notifications
+- filter by notification type
+- pagination using `page` and `limit`
+- new notifications highlighted visually
+- viewed notifications shown in a calmer style
+
+## Styling approach
+
+I used a monochromatic minimal look with Material UI:
+
+- soft paper background
+- black, grey, and off-white palette
+- clean spacing
+- minimal chips and cards
+- simple layout without clutter
+
+## App structure
+
+- `stage7-frontend/app/page.js`
+- `stage7-frontend/app/api/notifications/route.js`
+- `stage7-frontend/src/components/NotificationDashboard.js`
+- `stage7-frontend/src/server/auth.js`
+- `stage7-frontend/src/server/logger.js`
+- `stage7-frontend/src/server/notifications.js`
+
+## How it works
+
+- browser calls local Next API route
+- Next API route fetches protected notifications API using Bearer token
+- response is shaped for UI
+- priority inbox is computed using type weight and recency
+- frontend renders all notifications and priority notifications in separate tabs
+
+## Logging
+
+Stage 7 also uses the logging middleware on the server side when notification data is fetched or if an error happens.
