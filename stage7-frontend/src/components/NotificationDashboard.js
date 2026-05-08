@@ -13,15 +13,30 @@ import {
   Typography,
 } from "@mui/material";
 
-const TYPE_COLORS = {
-  Placement: "error",
-  Result: "warning",
-  Event: "success",
+const TYPE_STYLES = {
+  Placement: {
+    borderColor: "text.primary",
+    color: "text.primary",
+  },
+  Result: {
+    borderColor: "text.secondary",
+    color: "text.primary",
+  },
+  Event: {
+    borderColor: "divider",
+    color: "text.secondary",
+  },
 };
 
 function NotificationCard({ notification, compact = false }) {
   return (
-    <Paper sx={{ p: compact ? 2 : 2.5 }}>
+    <Paper
+      sx={{
+        p: compact ? 2 : 2.5,
+        borderRadius: 3,
+        backgroundColor: "background.paper",
+      }}
+    >
       <Stack
         direction={{ xs: "column", sm: "row" }}
         spacing={1.5}
@@ -31,11 +46,17 @@ function NotificationCard({ notification, compact = false }) {
           <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
             <Chip
               label={notification.type}
-              color={TYPE_COLORS[notification.type] ?? "default"}
               size="small"
+              variant="outlined"
+              sx={TYPE_STYLES[notification.type] ?? undefined}
             />
             {notification.isNew ? (
-              <Chip label="New" variant="outlined" size="small" />
+              <Chip
+                label="New"
+                variant="outlined"
+                size="small"
+                sx={{ borderColor: "text.primary", color: "text.primary" }}
+              />
             ) : null}
           </Stack>
           <Typography variant="body1" sx={{ fontWeight: 600 }}>
@@ -103,23 +124,24 @@ export default function NotificationDashboard() {
       sx={{
         minHeight: "100vh",
         py: { xs: 4, md: 6 },
-        background:
-          "radial-gradient(circle at top left, rgba(194, 164, 120, 0.22), transparent 30%), linear-gradient(180deg, #f7f2e8 0%, #f4f1ea 100%)",
+        backgroundColor: "background.default",
       }}
     >
-      <Container maxWidth="lg">
-        <Stack spacing={3.5}>
-          <Stack spacing={1}>
-            <Typography variant="h1">Priority Inbox</Typography>
+      <Container maxWidth="md">
+        <Stack spacing={3}>
+          <Stack spacing={1} sx={{ pb: 1 }}>
+            <Typography variant="h1" sx={{ fontSize: { xs: "2.4rem", md: "3rem" } }}>
+              Priority Inbox
+            </Typography>
             <Typography variant="body1" color="text.secondary">
               Notifications ranked by urgency and recency for quick triage.
             </Typography>
           </Stack>
 
           {loading ? (
-            <Paper sx={{ p: 4 }}>
+            <Paper sx={{ p: 4, borderRadius: 3 }}>
               <Stack direction="row" spacing={2} alignItems="center">
-                <CircularProgress size={24} />
+                <CircularProgress size={24} color="inherit" />
                 <Typography>Loading notifications...</Typography>
               </Stack>
             </Paper>
@@ -129,7 +151,7 @@ export default function NotificationDashboard() {
 
           {!loading && !error && data ? (
             <Stack spacing={3}>
-              <Paper sx={{ p: { xs: 2.5, md: 3 } }}>
+              <Paper sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 4 }}>
                 <Stack
                   direction={{ xs: "column", md: "row" }}
                   spacing={2}
@@ -143,11 +165,20 @@ export default function NotificationDashboard() {
                     </Typography>
                   </Box>
                   <Stack direction="row" spacing={1} flexWrap="wrap">
-                    <Chip label={`Page ${data.page}`} />
-                    <Chip label={`${data.total} total`} variant="outlined" />
+                    <Chip
+                      label={`Page ${data.page}`}
+                      variant="outlined"
+                      sx={{ borderColor: "text.primary", color: "text.primary" }}
+                    />
+                    <Chip
+                      label={`${data.total} total`}
+                      variant="outlined"
+                      sx={{ borderColor: "divider" }}
+                    />
                     <Chip
                       label={`Filter: ${data.notificationType}`}
                       variant="outlined"
+                      sx={{ borderColor: "divider" }}
                     />
                   </Stack>
                 </Stack>
@@ -164,7 +195,7 @@ export default function NotificationDashboard() {
                 </Stack>
               </Paper>
 
-              <Stack spacing={1.5}>
+              <Stack spacing={1.5} sx={{ pb: 2 }}>
                 <Typography variant="h2">All Notifications</Typography>
                 <Stack spacing={1.5}>
                   {(data.notifications ?? []).map((notification) => (
