@@ -855,7 +855,8 @@ This keeps maintenance cost around `O(log n)` per new notification, which is goo
 
 ## Output
 
-The code writes the ranked output to `stage6_priority_output.json`, which can be used for screenshots.
+The code writes the ranked output to `stage6_priority_output.json`.
+![Stage 6 ranked output](stage6_output.png)
 
 ## Code file
 
